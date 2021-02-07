@@ -1,3 +1,5 @@
+# pylint: disable-all
+
 from mongoengine import *
 
 def mongo_to_dict(obj, exclude_fields):
