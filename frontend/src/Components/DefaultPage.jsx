@@ -1,12 +1,39 @@
 import React from 'react';
 import { useState, useEffect, useCallback } from 'react';
 import DefaultLogin from './DefaultLogin';
+import OrderPage from './OrderPage/OrderPage';
+import RestaurantPage from './RestaurantPage/RestaurantPage';
+import { BrowserRouter as Router, Switch, Route } from 'react-router-dom';
+
 
 export default function DefaultPage() {
     const [isLoggedIn, setIsLoggedIn] = useState(false);
+    const [isOwner, setIsOwner] = useState(false);
+    const [rname, setRname] = useState(undefined);
 
     const login = useCallback(() => {
-        setIsLoggedIn(true);
+        const url = 'http://localhost:5000/user/current';
+        let headers = new Headers();
+        headers.set('x-access-token', localStorage.getItem('token'));
+        headers.append('Content-Type', 'application/json');
+        fetch(url, {
+            method: 'get',
+            headers: headers
+        })
+        .then(response => response.json())
+        .then(json => {
+            if(json.status === 200) {
+                setIsOwner(json.message.role === 'owner')
+                setRname(json.message.rname)
+                setIsLoggedIn(true);
+            }
+            else {
+                logout();
+            }
+        })
+        .catch(() => {
+            logout();
+        });
       },
       []
     );
@@ -20,7 +47,6 @@ export default function DefaultPage() {
 
     useEffect(() => {
         if(localStorage.getItem('token')) {
-            login()
             const url = 'http://localhost:5000/user/login';
     
             let headers = new Headers();
@@ -36,7 +62,8 @@ export default function DefaultPage() {
                     logout();
                 }
                 else {
-                    localStorage.setItem('token', json.responseMessage);
+                    localStorage.setItem('token', json.message);
+                    login();
                 }
             })
             .catch(() => {
@@ -49,5 +76,14 @@ export default function DefaultPage() {
     if(!isLoggedIn) {
         return <DefaultLogin login={login}/>
     }
-    return (<button onClick={logout}>logout</button>);
+    return (
+        <Router>
+            <main>
+                <Switch>
+                    {isOwner && <Route path='/restaurant' exact component={() => <RestaurantPage rname={rname}/> } />}
+                    <Route path='/' component={() => <OrderPage logout={logout} owner={isOwner} rname={rname}/>}/>
+                </Switch>
+            </main>
+        </Router>
+    );
 }
