@@ -99,7 +99,7 @@ class Service:
     def update_token(self, user):
         token = jwt.encode(
             {
-                'userId': user,
+                'user': user,
                 'exp': datetime.datetime.utcnow() + datetime.timedelta(minutes=config['token']['exp'])
             },
             config['secret_key']

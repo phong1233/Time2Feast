@@ -39,4 +39,7 @@ def create_new_user():
 @return_json
 @token_required
 def get_current_user(current_user):
-    return current_user
+    return {
+        'status': 200,
+        'message': current_user
+    }
