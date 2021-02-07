@@ -1,0 +1,5 @@
+flask
+flask-cors
+mongoengine
+pymongo[srv]
+PyJWT==1.7.1

@@ -1,0 +1,38 @@
+version: "3.8"
+
+services:
+    frontend:
+        build:
+            context: ./frontend
+        stdin_open: true
+        ports:
+            - 3000:3000
+        env_file: ./env/frontend.env
+        networks:
+            - time2feast
+
+    backend:
+        build:
+            context: ./backend
+        ports:
+            - 5000:5000
+        env_file: ./env/backend.env
+        depends_on: 
+            - mongodb
+        networks:
+            - time2feast
+
+    mongodb:
+        image: mongo:latest
+        expose:
+            - 27017
+        ports:
+            - 27017:27017
+        networks:
+            - time2feast
+        volumes:
+            - ./volumes/mongodb:/data/
+
+networks:
+    time2feast:
+        driver: bridge
