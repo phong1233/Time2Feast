@@ -2,6 +2,7 @@ import React from 'react';
 import { useState, useEffect, useCallback } from 'react';
 import DefaultLogin from './DefaultLogin';
 import OrderPage from './OrderPage/OrderPage';
+import RestaurantPage from './RestaurantPage/RestaurantPage';
 import { BrowserRouter as Router, Switch, Route } from 'react-router-dom';
 
 
@@ -79,7 +80,7 @@ export default function DefaultPage() {
         <Router>
             <main>
                 <Switch>
-                    {isOwner && <Route path='/restaurant' exact component={() => <div>restp</div> } />}
+                    {isOwner && <Route path='/restaurant' exact component={() => <RestaurantPage rname={rname}/> } />}
                     <Route path='/' component={() => <OrderPage logout={logout} owner={isOwner} rname={rname}/>}/>
                 </Switch>
             </main>

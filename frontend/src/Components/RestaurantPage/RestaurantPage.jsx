@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { makeStyles } from '@material-ui/core/styles';
 import { Card, CardContent, Grid, ListItem, ListItemText, TextField, Button, ListItemIcon, Checkbox } from '@material-ui/core';
 import CheckCircleOutlineIcon from '@material-ui/icons/CheckCircleOutline';
@@ -80,6 +80,30 @@ export default function RestaurantPage(props) {
     const [nameList, setNameList] = useState([]);
     const [priceList, setPriceList] = useState([]);
     const [checked, setChecked] = useState([1]);
+    const [menu, setMenu] = useState([]);
+
+    useEffect(() => {
+        const url = `http://localhost:5000/resto/${props.rname}`;
+        let headers = new Headers();
+        headers.set('x-access-token', localStorage.getItem('token'));
+        headers.append('Content-Type', 'application/json');
+        fetch(url, {
+            method: 'get',
+            headers: headers
+        })
+        .then(response => response.json())
+        .then(json => {
+            if(json.status === 200) {
+                setMenu(json.message);
+            }
+            else {
+                setMenu([]);
+            }
+        })
+        .catch(() => {
+            setMenu([]);
+        });
+    }, [props]);
 
     const handleItemNameChange = (event) => {
         setItemName(event.target.value);
@@ -144,7 +168,7 @@ export default function RestaurantPage(props) {
     return(
         <div className={classes.root}>
             <Card className={classes.card}>
-                <div className={classes.title}>Restaurant Name</div>
+                <div className={classes.title}>Restaurant {props.rname}</div>
                 <CardContent className={classes.content}>
                     <Grid container spacing={2}>
                         <Grid item xs={6}>
@@ -156,7 +180,23 @@ export default function RestaurantPage(props) {
                                         <Grid item xs={12}>
                                             <div className={classes.list}>
                                                 <FixedSizeList height={360} width={300} itemSize={60} itemCount={nameList.length} >
-                                                    {renderRow}
+                                                    {
+                                                    menu.map((item) => {
+                                                        return (
+                                                            <ListItem button key={item.name}>
+                                                            <ListItemIcon>
+                                                                <Checkbox
+                                                                    edge="start"
+                                                                    // checked={checked.indexOf(value) !== -1}
+                                                                    tabIndex={-1}
+                                                                    disableRipple
+                                                                    // inputProps={{ 'aria-labelledby': labelId }}
+                                                                />
+                                                            </ListItemIcon>
+                                                            <ListItemText primary={`${item.name} - ${item.price}$`} />);
+                                                            </ListItem>
+                                                        );
+                                                    })}
                                                 </FixedSizeList>
                                             </div>
                                         </Grid>
