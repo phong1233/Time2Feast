@@ -1,9 +1,11 @@
-import React from 'react'
-import { makeStyles } from '@material-ui/core/styles'
-import { Card, CardContent, CardHeader, CardMedia, CardActions, Grid, FormControl, TextField, Button, StyledButton } from '@material-ui/core'
-import AccountCircleRoundedIcon from '@material-ui/icons/AccountCircleRounded'
-import LockRoundedIcon from '@material-ui/icons/LockRounded'
-import clsx from 'clsx'
+import React, {useState} from 'react';
+import { makeStyles } from '@material-ui/core/styles';
+import { Card, CardContent, CardHeader, CardMedia, CardActions, Grid, FormControl, TextField, Button, StyledButton } from '@material-ui/core';
+import AccountCircleRoundedIcon from '@material-ui/icons/AccountCircleRounded';
+import LockRoundedIcon from '@material-ui/icons/LockRounded';
+import clsx from 'clsx';
+import { Link } from 'react-router-dom';
+const base64 = require('base-64');
 
 const useStyles = makeStyles((theme) => ({
     root: {
@@ -77,16 +79,52 @@ const useStyles = makeStyles((theme) => ({
 }))
 
 export default function LoginPage(props) {
-    const classes = useStyles()
+    const classes = useStyles();
+    const [invalid, setInvalid] = useState(false);
+    const [email, setEmail] = useState(undefined);
+    const [password, setPassword] = useState(undefined);
+    
+    const handleEmailChange = (event) => {
+        setEmail(event.target.value);
+    };
+
+    const handlePasswordChange = (event) => {
+        setPassword(event.target.value);
+    };
+
+    const login = () => {
+        const url = 'http://localhost:5000/user/login';
+
+        let headers = new Headers();
+        headers.set('Authorization', 'Basic ' + base64.encode(email + ":" + password));
+        headers.append('Content-Type', 'application/json');
+        fetch(url, {
+            method: 'post',
+            headers: headers
+        })
+        .then(response => response.json())
+        .then(json => {
+            if(json.status === 200) {
+                localStorage.setItem('token', json.message);
+                setInvalid(false);
+                props.login();
+            }
+            else {
+                setInvalid(true);
+            }
+        })
+        .catch(() => {
+            setInvalid(true);
+        }
+        );
+    };
+
     return(
         <div className={classes.root}>
             <Card className={classes.card}>
                 <div className={classes.title}>
                     Sign in 2 feast
                 </div>
-                <CardMedia
-                    image={require('../Images/sandwich.jpg')}
-                />
                 <CardContent className={classes.content}>
                     <Grid container spacing={2} alignItems="center" justify="center">
                         <Grid item>
@@ -98,9 +136,8 @@ export default function LoginPage(props) {
                             <FormControl required className={clsx(classes.textField)} variant="outlined" size="small">
                                 <TextField
                                     required
-                                    // error={invalid}
                                     label='email'
-                                    // onChange={handleEmailChange}
+                                    onChange={handleEmailChange}
                                     variant='outlined'
                                     size='small'
                                 />
@@ -117,9 +154,8 @@ export default function LoginPage(props) {
                             <FormControl required className={clsx(classes.textField)} variant="outlined" size="small">
                                 <TextField
                                     required
-                                    // error={invalid}
                                     label='password'
-                                    // onChange={handlePasswordChange}
+                                    onChange={handlePasswordChange}
                                     variant='outlined'
                                     type='password'
                                     size='small'
@@ -129,11 +165,17 @@ export default function LoginPage(props) {
                     </Grid>
                 </CardContent>
                 <CardActions>
-                    <Button className={classes.loginButton}>sign in</Button>
+                    <Button 
+                        className={classes.loginButton}
+                        color={invalid ? 'secondary' : 'default'}
+                        onClick={login}
+                    >
+                        sign in
+                    </Button>
                 </CardActions>
                 <div spacing={2}>
                     New here?
-                    <Button className={classes.signupButton} size='medium' variant='text'>sign up</Button>
+                    <Button component={Link} to={'/signup'}className={classes.signupButton} size='medium' variant='text'>sign up</Button>
                 </div>
             </Card>
         </div>
